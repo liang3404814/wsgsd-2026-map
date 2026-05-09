@@ -756,8 +756,24 @@ function highlightSale(id, flyTo) {
   if (card) {
     card.classList.add('highlight');
     if (!flyTo) {
-      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scrollCardIntoView(card);
     }
+  }
+}
+
+// On mobile, the map is sticky at the top of the viewport. Default scrollIntoView
+// places the card behind the map. Compensate by scrolling so the card lands just
+// below the map's visible bottom edge.
+function scrollCardIntoView(card) {
+  const isMobile = window.innerWidth <= 800;
+  if (isMobile) {
+    const mapEl = document.getElementById('map');
+    const mapBottom = mapEl.getBoundingClientRect().bottom;
+    const cardTop = card.getBoundingClientRect().top;
+    const target = window.scrollY + cardTop - mapBottom - 16;
+    window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+  } else {
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
 
