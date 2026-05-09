@@ -423,6 +423,38 @@
     font-size: 12.5px;
   }
 
+  /* Google Maps directions link (popups + list cards) */
+  .gmaps-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 99px;
+    background: var(--bg-elev);
+    color: var(--accent-deep);
+    font-size: 11.5px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--line-soft);
+    white-space: nowrap;
+    transition: background 0.12s, border-color 0.12s;
+  }
+  .gmaps-link:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  .gmaps-link svg { flex-shrink: 0; }
+  .leaflet-popup-content .gmaps-link { margin-top: 8px; }
+  .sale-card .addr-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    justify-content: space-between;
+    margin-bottom: 3px;
+  }
+  .sale-card .addr-row .addr { margin-bottom: 0; flex: 1; min-width: 0; }
+  .sale-card .gmaps-link { padding: 2px 7px; font-size: 11px; }
+
   /* Locate-me button (Leaflet control) */
   .locate-btn {
     width: 30px;
@@ -631,6 +663,13 @@ function makeMarkerIcon(color) {
   });
 }
 
+function gmapsHref(s) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`;
+}
+const GMAPS_ICON =
+  '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M12 21s-7-7.5-7-12a7 7 0 1 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>';
+
 function popupHTML(s) {
   const chips = s.c.map(c =>
     `<span class="chip" style="background:${CAT_COLORS[c]}22;color:${CAT_COLORS[c]}">${c}</span>`
@@ -640,6 +679,7 @@ function popupHTML(s) {
     <div class="pop-addr">${s.a}</div>
     <div class="pop-desc">${s.d}</div>
     <div class="pop-cats">${chips}</div>
+    <a class="gmaps-link" href="${gmapsHref(s)}" target="_blank" rel="noopener">${GMAPS_ICON}<span>Directions</span></a>
   `;
 }
 
@@ -672,11 +712,15 @@ function buildList(visibleSales) {
     card.innerHTML = `
       <div class="num">#${s.n}</div>
       <div class="body">
-        <div class="addr">${s.a}</div>
+        <div class="addr-row">
+          <div class="addr">${s.a}</div>
+          <a class="gmaps-link" href="${gmapsHref(s)}" target="_blank" rel="noopener" title="Open directions in Google Maps">${GMAPS_ICON}<span>Directions</span></a>
+        </div>
         <div class="desc">${s.d}</div>
         <div class="chips">${chips}</div>
       </div>
     `;
+    card.querySelector('.gmaps-link').addEventListener('click', e => e.stopPropagation());
     card.addEventListener('click', () => {
       card.classList.toggle('expanded');
       highlightSale(s.n, true);
